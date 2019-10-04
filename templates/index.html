@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{%block form %}
+    <form method="POST" action={{url_for('translate')}}>
+        <p>{{ message }}</p>
+        <label for="textToTranslate">Text to translate</label>
+        <input name="textToTranslate" id="textToTranslate">
+        <label for="sourceLanguage">From:</label>
+        <!-- <input type="text" name="sourceLanguage" id="sourceLanguage"> -->
+        <select id="sourceLanguage" name="sourceLanguage">
+            <option value="" disabled="true" selected="true">--select a source language--</option>
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+        </select>
+        <label for="targetLanguage">to:</label>
+        <!-- <input type="text" name="targetLanguage" id="targetLanguage"> -->
+        <select id="targetLanguage" name="targetLanguage">
+            <option value="" disabled="true" selected="true">--select a target language--</option>
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+        </select>
+        <input type="submit" value="Translate">
+    </form>
+{% endblock %}
