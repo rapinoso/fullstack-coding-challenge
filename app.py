@@ -4,6 +4,7 @@ import requests
 
 app = Flask(__name__)
 
+# development config
 ENV = 'dev'
 
 if ENV == 'dev':
@@ -14,6 +15,8 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = ''
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# creating database to retrieve response data
 
 db = SQLAlchemy(app)
 
@@ -39,6 +42,7 @@ class Translation_request(db.Model):
         self.text_format = text_format
         self.uid = uid
 
+# variables for the request header
 username = "fullstack-challenge"
 api_key = "9db71b322d43a6ac0f681784ebdcc6409bb83359"
 URL = "https://sandbox.unbabel.com/tapi/v2/translation/"
@@ -48,7 +52,7 @@ headers = {
     'Authorization': f'ApiKey {username}:{api_key}'
 }
 
-
+# app routes
 @app.route('/', methods=["GET", "POST"])
 def index():
     return render_template("index.html")
@@ -57,19 +61,28 @@ def index():
 @app.route('/translate', methods=["GET", "POST"])
 def translate():
     
-## variables taken from the form to use in the translation request
-    text_to_translate = request.form["textToTranslate"]
-    source_language = request.form["sourceLanguage"]
-    target_language = request.form["targetLanguage"]
+# values are retrieved from form inputs
+    form_to_translate = request.form["textToTranslate"]
+    form_source_lang = request.form["sourceLanguage"]
+    form_target_lang = request.form["targetLanguage"]
 
+# preparing the json and sending it to translation request endpoint
     payload = {
-        'text': f"{text_to_translate}",
-        'source_language': f"{source_language}",
-        'target_language': f"{target_language}"
+        'text': f"{form_to_translate}",
+        'source_language': f"{form_source_lang}",
+        'target_language': f"{form_target_lang}"
         }
     
     response = requests.post(URL, data=json.dumps(payload), headers=headers)
-    
+
+
+# checking if user provided input values properly   
+# TODO check non provided source, target or both languages 
+    if form_source_lang == form_target_lang:
+        return render_template("warning.html", warning = "Source language and target language must be different.") 
+    if form_to_translate == "":
+        return render_template("warning.html", warning="Please provide the text for translation")
+
     json_data = response.json()
    
     order_number = json_data["order_number"]
@@ -81,17 +94,12 @@ def translate():
     text_format = json_data["text_format"]
     uid = json_data["uid"]
 
-   
-    if source_language == target_language:
-        return render_template("index.html", message = "Source language and target language must be different.") 
-    if text_to_translate == "":
-        return render_template("index.html", message="Please provide the text for translation")
     if response.ok:
         data = Translation_request(order_number,price, source_language, status, target_language, text, text_format, uid)
         db.session.add(data)
         db.session.commit()
 
-        return render_template("index.html", message="Translation successifuly sent")
+        return render_template("success.html", ok_message="Translation successifuly sent")
 
 
 if __name__ == '__main__':

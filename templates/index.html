@@ -1,24 +1,31 @@
 {% extends "layout.html" %}
 
 {%block form %}
-    <form method="POST" action={{url_for('translate')}}>
-        <p>{{ message }}</p>
-        <label for="textToTranslate">Text to translate</label>
-        <input name="textToTranslate" id="textToTranslate">
-        <label for="sourceLanguage">From:</label>
-        <!-- <input type="text" name="sourceLanguage" id="sourceLanguage"> -->
-        <select id="sourceLanguage" name="sourceLanguage">
-            <option value="" disabled="true" selected="true">--select a source language--</option>
-            <option value="en">EN</option>
-            <option value="es">ES</option>
-        </select>
-        <label for="targetLanguage">to:</label>
-        <!-- <input type="text" name="targetLanguage" id="targetLanguage"> -->
-        <select id="targetLanguage" name="targetLanguage">
-            <option value="" disabled="true" selected="true">--select a target language--</option>
-            <option value="en">EN</option>
-            <option value="es">ES</option>
-        </select>
-        <input type="submit" value="Translate">
+    <form class="mt-3" method="POST" action={{url_for('translate')}}>
+        {% block success %} {% endblock %}
+        {% block warning %} {% endblock %}
+        <div class="form-group">
+            <label for="textToTranslate">Text to translate</label>
+            <textarea class="form-control" name="textToTranslate" id="textToTranslate" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="sourceLanguage">From:</label>
+            <select class="form-control" id="sourceLanguage" name="sourceLanguage">
+                <option value="" disabled="true" selected="true">--select a source language--</option>
+                <option value="en">EN</option>
+                <option value="es">ES</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="targetLanguage">to:</label>
+            <select class="form-control" id="targetLanguage" name="targetLanguage">
+                <option value="" disabled="true" selected="true">--select a target language--</option>
+                <option value="en">EN</option>
+                <option value="es">ES</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Send Translation</button>
+        </div>
     </form>
 {% endblock %}
