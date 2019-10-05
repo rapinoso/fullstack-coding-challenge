@@ -55,7 +55,9 @@ headers = {
 # app routes
 @app.route('/', methods=["GET", "POST"])
 def index():
-    return render_template("index.html")
+    list = Translation_request.query.all()
+    print(list)
+    return render_template("index.html", list=list)
 
 
 @app.route('/translate', methods=["GET", "POST"])
@@ -74,7 +76,9 @@ def translate():
         }
     
     response = requests.post(URL, data=json.dumps(payload), headers=headers)
-
+    print(response)
+    json_data = response.json() #json-to-dict sent to DB
+    
 
 # checking if user provided input values properly   
 # TODO check non provided source, target or both languages 
@@ -83,7 +87,6 @@ def translate():
     if form_to_translate == "":
         return render_template("warning.html", warning="Please provide the text for translation")
 
-    json_data = response.json()
    
     order_number = json_data["order_number"]
     price = json_data["price"]
@@ -98,6 +101,10 @@ def translate():
         data = Translation_request(order_number,price, source_language, status, target_language, text, text_format, uid)
         db.session.add(data)
         db.session.commit()
+        
+        # my_query = db.query_all(Translation_request).filter(Translation_request.uid == uid).count()
+        # print(my_query)
+    
 
         return render_template("success.html", ok_message="Translation successifuly sent")
 
