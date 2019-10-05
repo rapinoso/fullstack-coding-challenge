@@ -17,7 +17,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-class translation_request(db.Model):
+class Translation_request(db.Model):
     __tablename__= 'translation_request'
     id = db.Column(db.Integer, primary_key=True)
     order_number = db.Column(db.Float, unique=True)
@@ -26,8 +26,8 @@ class translation_request(db.Model):
     status = db.Column(db.String(200))
     target_language = db.Column(db.String(200))
     text = db.Column(db.Text())
-    text_format = db.Column(db.String)
-    uid = db.Column(db.Integer, unique=True)
+    text_format = db.Column(db.String(200))
+    uid = db.Column(db.String(200), unique=True)
 
     def __init__(self, order_number, price, source_language, status, target_language, text, text_format, uid):
         self.order_number = order_number
@@ -69,14 +69,29 @@ def translate():
         }
     
     response = requests.post(URL, data=json.dumps(payload), headers=headers)
-    json_response = response.json()
+    
+    json_data = response.json()
+   
+    order_number = json_data["order_number"]
+    price = json_data["price"]
+    source_language = json_data["source_language"]
+    status = json_data["status"]
+    target_language = json_data["target_language"]
+    text = json_data["text"]
+    text_format = json_data["text_format"]
+    uid = json_data["uid"]
+
    
     if source_language == target_language:
         return render_template("index.html", message = "Source language and target language must be different.") 
     if text_to_translate == "":
         return render_template("index.html", message="Please provide the text for translation")
     if response.ok:
-        return render_template("index.html", message=f"Translation sent!")
+        data = Translation_request(order_number,price, source_language, status, target_language, text, text_format, uid)
+        db.session.add(data)
+        db.session.commit()
+
+        return render_template("index.html", message="Translation successifuly sent")
 
 
 if __name__ == '__main__':
