@@ -11,7 +11,7 @@
         <div class="form-group">
             <label for="sourceLanguage">From:</label>
             <select class="form-control" id="sourceLanguage" name="sourceLanguage">
-                <option value="" disabled="true" selected="true">--select a source language--</option>
+                <option value="" disabled="true">--select a source language--</option>
                 <option value="en">EN</option>
                 <option value="es">ES</option>
             </select>
@@ -19,20 +19,20 @@
         <div class="form-group">
             <label for="targetLanguage">to:</label>
             <select class="form-control" id="targetLanguage" name="targetLanguage">
-                <option value="" disabled="true" selected="true">--select a target language--</option>
+                <option value="" disabled="true">--select a target language--</option>
                 <option value="en">EN</option>
                 <option value="es">ES</option>
             </select>
         </div>
         <div class="form-group">
             <button type="submit" class="btn btn-primary">Send Translation</button>
-            <a class="btn btn-dark" href={{url_for('update')}} role="button">Update</a>
+            <a class="btn btn-dark" href={{url_for('update')}} role="button">Update status</a>
         </div>    
      </form>
         <table class="table table-striped table-dark">
             <thead>
                 <tr>
-                    <th scope="col">#</th>
+                    <!-- <th scope="col"></th> -->
                     <th scope="col">Status</th>
                     <th scope="col">from</th>
                     <th scope="col">to</th>
@@ -42,12 +42,11 @@
             </thead>
             {% for item in list %}
             <tbody>
-                <tr>
-                    <th scope="row" id={{item.uid}}>{{ item.id }}</th>
-                    <td>{{ item.status }}</td>
+                <tr class="row-to-sort">
+                    <td id={{item.uid}}>{{ item.status }}</td>
                     <td>{{ item.source_language }}</td>
                     <td>{{ item.target_language }}</td>  
-                    <td>{{ item.text }}</td>  
+                    <td class="txt">{{ item.text }}</td>  
                     <td>{{ item.translatedText }}</td>
                 </tr>
             </tbody>
@@ -56,8 +55,3 @@
 {% endblock %}
 
 
-<!-- <ul>
-        {% for item in list %}
-            <li>status is {{item.uid}}</li>
-        {% endfor %}
-    </ul> -->

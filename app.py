@@ -17,6 +17,9 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # creating database to retrieve response data
+# adding it to the app and creating the database on pgAdmin4:
+#>>> from app import db
+#>>> db.create_all()
 
 db = SQLAlchemy(app)
 
@@ -57,7 +60,9 @@ headers = {
 # app routes
 @app.route('/', methods=["GET", "POST"])
 def index():
-    list = Translation_request.query.all()
+    
+    list = Translation_request.query.order_by(Translation_request.text)
+
     return render_template("index.html", list=list)
 
 
@@ -69,18 +74,29 @@ def translate():
     form_source_lang = request.form["sourceLanguage"]
     form_target_lang = request.form["targetLanguage"]
 
+# checking if user provided input values properly   
+    if form_source_lang == form_target_lang:
+        
+        list = Translation_request.query.order_by(Translation_request.text)
+        return render_template("warning.html", warning = "Source language and target language must be different.", list=list) 
+    
+    if form_to_translate == "":
+        
+        list = Translation_request.query.order_by(Translation_request.text)
+        return render_template("warning.html", warning="Please provide the text for translation", list=list)
+
 # preparing the json and sending it to translation request endpoint
-    payload = {
+    post_body = {
         'text': f"{form_to_translate}",
         'source_language': f"{form_source_lang}",
         'target_language': f"{form_target_lang}"
         }
-    
-    # post request
-    post_res = requests.post(URL, data=json.dumps(payload), headers=headers)
+
+    # post request  
+    post_res = requests.post(URL, data=json.dumps(post_body), headers=headers)
     json_data = post_res.json() #json-to-dict sent to DB
-    post_uid = json_data["uid"]
-    
+    post_uid = json_data["uid"] #putting the value of uid from post response into a variable to make the get request
+
     # get request
     get_res = requests.get(URL+post_uid, headers=headers)
     get_data = get_res.json()
@@ -96,43 +112,36 @@ def translate():
     uid = get_data["uid"]
 
     
-# checking if user provided input values properly   
 # TODO check non provided source, target or both languages 
-    if form_source_lang == form_target_lang:
-        return render_template("warning.html", warning = "Source language and target language must be different.") 
-    if form_to_translate == "":
-        return render_template("warning.html", warning="Please provide the text for translation")
     if post_res.ok:
         data = Translation_request(order_number, price, source_language, status, target_language, text, text_format, translatedText, uid)
         db.session.add(data)
         db.session.commit()
         
-        list = Translation_request.query.all()
+        
+        list = Translation_request.query.order_by(Translation_request.text)
 
         return render_template("success.html", ok_message="Translation successifuly sent", list=list)
 
 @app.route("/update", methods=["GET"])
 def update():
-        
-    list = Translation_request.query.all()
     
+    list = Translation_request.query.all()
 
     for item in list:
         
         get_res = requests.get(URL+item.uid, headers=headers)
         update = get_res.json()
-
+        
         if 'translatedText' not in update.keys():
             item.translatedText = ""
-            item.status = update["status"]
-            db.session.commit()
         else: 
             item.translatedText = update["translatedText"]
-            item.status = update["status"]
             db.session.commit()
+    item.status = update["status"]
+    db.session.commit()
 
-
-    list = Translation_request.query.all().order
+    list = Translation_request.query.order_by(Translation_request.text) 	
     
     return render_template("index.html", list=list)
 
